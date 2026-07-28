@@ -27,7 +27,16 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">{children}
+        <footer className="flex flex-col gap-4 text-sm text-gray-500 mt-auto justify-center items-center">
+          <p>© 2026 Habit Tracker. All rights reserved.</p>
+          <ul className="flex flex-row gap-4 text-sm text-gray-500">
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/contact">Contact</a></li>
+          </ul>
+        </footer>
+      </body>
     </html>
   );
 }
