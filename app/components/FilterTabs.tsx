@@ -3,16 +3,12 @@
 import { useState } from "react";
 import FilterButton from "./FilterButton";
 import HabitList from "./HabitList";
-import { Habit } from "@/lib/types/habit";
+import { HabitDto } from "@/lib/types/habit";
+import { habitDtosMockData } from "@/lib/habits/habitsMockData";
 
 type Filter = "all" | "today" | "daily" | "weekly" | "monthly" | "yearly";
 // TODO; This should be fetched from the database
-const habits: Habit[] = [
-  { id: 1, name: "Habit 1", description: "Habit 1 description", type: "negative", createdAt: new Date(), updatedAt: new Date() },
-  { id: 2, name: "Habit 2", description: "Habit 2 description", type: "positive", createdAt: new Date(), updatedAt: new Date() },
-  { id: 3, name: "Habit 3", description: "Habit 3 description", type: "positive", createdAt: new Date(), updatedAt: new Date() },
-  { id: 4, name: "Habit 4", description: "Habit 4 description", type: "positive", createdAt: new Date(), updatedAt: new Date() },
-];
+const habitDtos: HabitDto[] = habitDtosMockData;
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "all", label: "All" },
@@ -43,12 +39,12 @@ export default function FilterTabs() {
         <hr className="w-full border-zinc-200 my-4" />
   
         {/* Layout / content switches with the tab */}
-        {active === "all" && <HabitList habits={habits} />}
-        {active === "today" && <HabitList habits={habits} />}
-        {active === "daily" && <HabitList habits={habits} />}
-        {active === "weekly" && <HabitList habits={habits} />}
-        {active === "monthly" && <HabitList habits={habits} />}
-        {active === "yearly" && <HabitList habits={habits} />}
+        {active === "all" && <HabitList habits={habitDtos} />}
+        {active === "today" && <HabitList habits={habitDtos} />}
+        {active === "daily" && <HabitList habits={habitDtos} />}
+        {active === "weekly" && <HabitList habits={habitDtos} />}
+        {active === "monthly" && <HabitList habits={habitDtos} />}
+        {active === "yearly" && <HabitList habits={habitDtos} />}
       </>
     );
   }

@@ -7,10 +7,15 @@ export type Habit = {
     updatedAt: Date;
 }
 
-export type HabitType = 'positive' | 'negative';
+export type HabitType = 'positive' | 'negative' | 'neutral';
 
 export type HabitCompletion = {
     id: number;
     habitId: number;
     date: Date;
+}
+
+export type HabitDto = {
+    habit: Habit;
+    completions: HabitCompletion[];
 }
