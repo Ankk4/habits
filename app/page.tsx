@@ -1,4 +1,3 @@
-import Image from "next/image";
 import FilterTabs from "./components/FilterTabs";
 
 export default function Home() {

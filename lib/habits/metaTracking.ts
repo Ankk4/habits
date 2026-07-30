@@ -1,5 +1,3 @@
-import { HabitCompletion } from "../types/habit";
-
 export type MetaTracking = {
   streak: number;
   longestStreak: number;
