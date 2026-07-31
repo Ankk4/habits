@@ -1,4 +1,4 @@
-import { defineEntity, p } from "@mikro-orm/core";
+import { defineEntity, InferEntity, p } from "@mikro-orm/core";
 import { Habit } from "./Habit";
 
 export const HabitStack = defineEntity({
@@ -16,3 +16,5 @@ export const HabitStack = defineEntity({
       .onUpdate(() => new Date()),
   },
 });
+
+export type HabitStack = InferEntity<typeof HabitStack>;

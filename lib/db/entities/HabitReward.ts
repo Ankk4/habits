@@ -1,4 +1,4 @@
-import { defineEntity, p } from "@mikro-orm/core";
+import { defineEntity, InferEntity, p } from "@mikro-orm/core";
 import { HabitRewardKind } from "../../types/habit";
 import { Habit } from "./Habit";
 
@@ -11,3 +11,5 @@ export const HabitReward = defineEntity({
     payload: p.json().nullable(),
   },
 });
+
+export type HabitReward = InferEntity<typeof HabitReward>;
