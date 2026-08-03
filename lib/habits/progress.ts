@@ -1,12 +1,12 @@
-import { HabitCompletion, HabitDto } from "../types/habit";
+import { HabitCompletionDto, HabitDto } from "../types/habit";
 import { getStartOfDay } from "../utils/date";
 
 const WEEK_DAYS = 7;
 
 /** Returns an array of 7 objects, one for each day of the current calendar week (Mon–Sun). */
-function weekCompletionDays(completions: HabitCompletion[]) {
+function weekCompletionDays(completions: HabitCompletionDto[]) {
   const completedDays = new Set(
-    completions.map((c) => getStartOfDay(c.date).getTime()),
+    completions.map((c) => getStartOfDay(c.completedAt).getTime()),
   );
   const today = getStartOfDay(new Date());
   // getDay(): Sun=0 … Sat=6 → Monday-based offset 0…6
@@ -26,15 +26,12 @@ function weekCompletionDays(completions: HabitCompletion[]) {
 }
 
 export const habitProgress = (habit: HabitDto) => {
-  // Defensive: only count completions that belong to this habit.
-  const relevantCompletions = habit.completions.filter(
-    (completion) => completion.habit.id === habit.habit.id,
-  );
+  const completions = habit.completions;
 
   const today = new Date().toDateString();
   const completedToday =
-    relevantCompletions.filter(
-      (completion) => completion.date.toDateString() === today,
+    completions.filter(
+      (completion) => completion.completedAt.toDateString() === today,
     ).length > 0;
 
   return {
@@ -43,7 +40,7 @@ export const habitProgress = (habit: HabitDto) => {
     completedThisWeek: completedToday,
     completedThisMonth: completedToday,
     completedThisYear: completedToday,
-    completedTotal: relevantCompletions.length,
-    weekDaysCompletion: weekCompletionDays(relevantCompletions),
+    completedTotal: completions.length,
+    weekDaysCompletion: weekCompletionDays(completions),
   };
 };

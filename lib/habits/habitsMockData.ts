@@ -1,10 +1,9 @@
 import type {
-  Habit,
-  HabitCompletion,
-  HabitCue,
+  HabitCompletionDto,
+  HabitCueDto,
   HabitDto,
-  HabitReward,
-  HabitStack,
+  HabitRewardDto,
+  HabitStackLinkDto,
 } from "../types/habit";
 import {
   HabitCueKind,
@@ -12,113 +11,79 @@ import {
   HabitType,
 } from "../types/habit";
 
-export const habitsMockData: Habit[] = [
+const now = new Date();
+
+const habits: Array<
+  Pick<HabitDto, "id" | "name" | "description" | "type" | "createdAt" | "updatedAt">
+> = [
   {
     id: 1,
     name: "Habit 1",
     description: "Habit 1 description",
     type: HabitType.NEGATIVE,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: now,
+    updatedAt: now,
   },
   {
     id: 2,
     name: "Habit 2",
     description: "Habit 2 description",
     type: HabitType.POSITIVE,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: now,
+    updatedAt: now,
   },
   {
     id: 3,
     name: "Habit 3",
     description: "Habit 3 description",
     type: HabitType.NEUTRAL,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: now,
+    updatedAt: now,
   },
 ];
 
-export const cuesMockData: Record<number, HabitCue> = {
-  1: {
-    id: 1,
-    habit: habitsMockData[0],
-    kind: HabitCueKind.TEXT,
-    payload: "Urge after dinner",
-  },
-  2: {
-    id: 2,
-    habit: habitsMockData[1],
-    kind: HabitCueKind.TEXT,
-    payload: "Alarm at 7:00",
-  },
-  3: {
-    id: 3,
-    habit: habitsMockData[2],
-    kind: HabitCueKind.TEXT,
-    payload: "After morning coffee",
-  },
-};
+const cues: HabitCueDto[] = [
+  { id: 1, habitId: 1, kind: HabitCueKind.TEXT, text: "Urge after dinner" },
+  { id: 2, habitId: 2, kind: HabitCueKind.TEXT, text: "Alarm at 7:00" },
+  { id: 3, habitId: 3, kind: HabitCueKind.TEXT, text: "After morning coffee" },
+];
 
-export const rewardsMockData: Record<number, HabitReward> = {
-  1: {
-    id: 1,
-    habit: habitsMockData[0],
-    kind: HabitRewardKind.POINTS,
-    payload: { points: 5 },
-  },
-  2: {
-    id: 2,
-    habit: habitsMockData[1],
-    kind: HabitRewardKind.POINTS,
-    payload: { points: 8 },
-  },
-};
+const rewards: HabitRewardDto[] = [
+  { id: 1, habitId: 1, kind: HabitRewardKind.POINTS, points: 5 },
+  { id: 2, habitId: 2, kind: HabitRewardKind.POINTS, points: 8 },
+];
 
 /** Habit 1 → Habit 2 (after 1, do 2). */
-export const stacksMockData: HabitStack[] = [
-  {
-    id: 1,
-    predecessor: habitsMockData[0],
-    successor: habitsMockData[1],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
+const stack: HabitStackLinkDto = {
+  id: 1,
+  habitId: 1,
+  name: "Habit 1",
+};
+
+const completions: HabitCompletionDto[] = [
+  { id: 1, habitId: 1, completedAt: now },
 ];
 
-export const completionsMockData: HabitCompletion[] = [
-  {
-    id: 1,
-    habit: habitsMockData[0],
-    date: new Date(),
-  },
-];
-
-const completionsForHabit = (habitId: number): HabitCompletion[] =>
-  completionsMockData.filter((c) => c.habit.id === habitId);
-
-const cuesForHabit = (habitId: number): HabitCue[] =>
-  Object.values(cuesMockData).filter((c) => c.habit.id === habitId);
-
-const rewardsForHabit = (habitId: number): HabitReward[] =>
-  Object.values(rewardsMockData).filter((r) => r.habit.id === habitId);
-
-const stackedAfterForHabit = (habitId: number): HabitStack | undefined =>
-  stacksMockData.find((s) => s.successor.id === habitId);
-
-const stackedIntoForHabit = (habitId: number): HabitStack[] =>
-  stacksMockData.filter((s) => s.predecessor.id === habitId);
-
-const toHabitDto = (habit: Habit): HabitDto => ({
-  habit,
-  completions: completionsForHabit(habit.id),
-  cues: cuesForHabit(habit.id),
-  rewards: rewardsForHabit(habit.id),
-  stackedAfter: stackedAfterForHabit(habit.id),
-  stackedInto: stackedIntoForHabit(habit.id),
-});
+function toHabitDto(
+  habit: (typeof habits)[number],
+): HabitDto {
+  return {
+    ...habit,
+    completions: completions.filter((c) => c.habitId === habit.id),
+    cues: cues.filter((c) => c.habitId === habit.id),
+    rewards: rewards.filter((r) => r.habitId === habit.id),
+    stackedAfter:
+      habit.id === 2
+        ? { id: stack.id, habitId: 1, name: "Habit 1" }
+        : undefined,
+    stackedInto:
+      habit.id === 1
+        ? [{ id: stack.id, habitId: 2, name: "Habit 2" }]
+        : [],
+  };
+}
 
 export const habitDtosMockData: HabitDto[] = [
-  toHabitDto(habitsMockData[0]),
-  toHabitDto(habitsMockData[1]),
+  toHabitDto(habits[0]),
+  toHabitDto(habits[1]),
 ];

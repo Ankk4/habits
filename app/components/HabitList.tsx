@@ -7,7 +7,7 @@ export default function HabitList({ habits }: { habits: HabitDto[] }) {
     return (
       <ul className="flex flex-col gap-2 w-full">
         {habits.map((h) => (
-          <li key={h.habit.id}>
+          <li key={h.id}>
             <HabitCard habit={h} />
           </li>
         ))}
