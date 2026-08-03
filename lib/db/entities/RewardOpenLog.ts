@@ -5,8 +5,8 @@ export const RewardOpenLog = defineEntity({
   name: "RewardOpenLog",
   properties: {
     id: p.integer().primary().autoincrement(),
-    item: () => p.manyToOne(Item).nullable(),
-    createdAt: p.datetime().onCreate(() => new Date()),
+    item: () => p.manyToOne(Item),
+    openedAt: p.datetime().onCreate(() => new Date())
   },
 });
 

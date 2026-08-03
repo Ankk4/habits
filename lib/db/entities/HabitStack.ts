@@ -9,7 +9,7 @@ export const HabitStack = defineEntity({
       p.manyToOne(Habit).inversedBy("stacksAsPredecessor"),
     /** At most one stack anchor per successor habit. */
     successor: () =>
-      p.manyToOne(Habit).inversedBy("stackAsSuccessor").unique(),
+      p.oneToOne(Habit).inversedBy("stackAsSuccessor").owner(),
     createdAt: p.datetime().onCreate(() => new Date()),
     updatedAt: p.datetime()
       .onCreate(() => new Date())

@@ -23,6 +23,8 @@ import {
 import { useRef, useState, type PointerEvent } from "react";
 import { getMetaTracking } from "@/lib/habits/metaTrackingController";
 import HabitCueField from "./HabitCueField";
+import { enqueueHabitRewards } from "@/app/actions/items";
+import Link from "next/link";
 
 const COMPLETE_THRESHOLD = 96;
 const DRAG_ACTIVATE = 8;
@@ -62,6 +64,7 @@ export default function HabitCard({ habit }: { habit: HabitDto }) {
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [rewardNotice, setRewardNotice] = useState<string | null>(null);
   const dragRef = useRef<{
     startX: number;
     offset: number;
@@ -80,6 +83,7 @@ export default function HabitCard({ habit }: { habit: HabitDto }) {
 
   const completeHabit = () => {
     if (!canComplete) return;
+    const rewards = habitDataState.rewards;
     setHabitDataState({
       ...habitDataState,
       completions: [
@@ -91,6 +95,18 @@ export default function HabitCard({ habit }: { habit: HabitDto }) {
         },
       ],
     });
+
+    if (rewards.length > 0) {
+      void enqueueHabitRewards(habitRow.id, rewards)
+        .then(({ enqueued }) => {
+          if (enqueued.length === 0) return;
+          const total = enqueued.reduce((sum, item) => sum + item.quantity, 0);
+          setRewardNotice(`+${total} gold queued — open in Games`);
+        })
+        .catch(() => {
+          setRewardNotice("Could not enqueue reward");
+        });
+    }
   };
 
   const resetDrag = () => {
@@ -198,6 +214,15 @@ export default function HabitCard({ habit }: { habit: HabitDto }) {
 
         <div className="flex flex-col gap-2 pl-2 text-left text-sm text-gray-500">
           <p>{habitRow.description}</p>
+
+          {rewardNotice && (
+            <p className="text-xs font-medium text-amber-700">
+              {rewardNotice}{" "}
+              <Link href="/games" className="underline underline-offset-2">
+                Open Games
+              </Link>
+            </p>
+          )}
 
           {(habitDataState.stackedAfter ||
             habitDataState.stackedInto.length > 0) && (

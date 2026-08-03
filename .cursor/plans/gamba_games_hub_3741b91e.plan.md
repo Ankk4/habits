@@ -4,19 +4,19 @@ overview: Establish a pluggable `/games` hub on a unified Item model (pending = 
 todos:
   - id: domain-entities
     content: Add Item + RewardOpenLog entities (no separate Reward table); itemService for enqueue/open/consume; HabitReward stays template-only
-    status: pending
+    status: completed
   - id: games-hub
     content: Build /games hub with owned-gold summary, pending item queue UI, and game registry
-    status: pending
+    status: completed
   - id: slots-poc
     content: Implement 3-reel slots PoC that consumes owned gold and enqueues win items (auto-open)
-    status: pending
+    status: completed
   - id: habit-enqueue
     content: On habit complete, enqueue pending Items from habit grant templates
-    status: pending
+    status: completed
   - id: nav-glue
     content: Add nav between habits and games; empty-gold / pending-item CTAs; brief GAMES.md
-    status: pending
+    status: completed
 isProject: false
 ---
 
