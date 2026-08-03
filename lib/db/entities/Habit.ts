@@ -1,4 +1,4 @@
-import { defineEntity, p } from "@mikro-orm/core";
+import { defineEntity, InferEntity, p } from "@mikro-orm/core";
 import { HabitType } from "../../types/habit";
 import { HabitCompletion } from "./HabitCompletion";
 import { HabitCue } from "./HabitCue";
@@ -31,3 +31,5 @@ export const Habit = defineEntity({
       p.oneToOne(HabitStack).mappedBy("successor").nullable(),
   },
 });
+
+export type Habit = InferEntity<typeof Habit>;

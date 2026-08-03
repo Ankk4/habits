@@ -1,4 +1,4 @@
-import { defineEntity, p } from "@mikro-orm/core";
+import { defineEntity, InferEntity, p } from "@mikro-orm/core";
 import { Habit } from "./Habit";
 
 export const HabitCompletion = defineEntity({
@@ -9,3 +9,5 @@ export const HabitCompletion = defineEntity({
     completedAt: p.datetime().onCreate(() => new Date()),
   },
 });
+
+export type HabitCompletion = InferEntity<typeof HabitCompletion>;
