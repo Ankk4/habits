@@ -1,0 +1,59 @@
+// lib/db/schema.ts
+export const SCHEMA_SQL = `
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS habit (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('positive', 'negative', 'neutral')),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS habit_completion (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  habit_id INTEGER NOT NULL REFERENCES habit(id) ON DELETE CASCADE,
+  completed_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS habit_cue (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  habit_id INTEGER NOT NULL REFERENCES habit(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL CHECK (kind IN ('text')),
+  payload TEXT
+);
+
+CREATE TABLE IF NOT EXISTS habit_reward (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  habit_id INTEGER NOT NULL REFERENCES habit(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL CHECK (kind IN ('points')),
+  payload TEXT
+);
+
+CREATE TABLE IF NOT EXISTS habit_stack (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  predecessor_id INTEGER NOT NULL REFERENCES habit(id) ON DELETE CASCADE,
+  successor_id INTEGER NOT NULL UNIQUE REFERENCES habit(id) ON DELETE CASCADE,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS item (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  key TEXT NOT NULL,
+  quantity INTEGER NOT NULL,
+  status TEXT NOT NULL,
+  source TEXT NOT NULL,
+  source_ref TEXT,
+  created_at TEXT NOT NULL,
+  opened_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS reward_open_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  item_id INTEGER NOT NULL REFERENCES item(id) ON DELETE CASCADE,
+  opened_at TEXT NOT NULL,
+  result TEXT NOT NULL
+);
+`;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FilterButton from "./FilterButton";
 import HabitList from "./HabitList";
 import { HabitDto } from "@/lib/types/habit";
@@ -9,6 +9,9 @@ import { habitDtosMockData } from "@/lib/habits/habitsMockData";
 type Filter = "all" | "today" | "daily" | "weekly" | "monthly" | "yearly";
 // TODO; This should be fetched from the database
 const habitDtos: HabitDto[] = habitDtosMockData;
+
+// temp smoke test new db client
+import { getDb } from "@/lib/db/client";
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "all", label: "All" },
@@ -21,7 +24,12 @@ const FILTERS: { id: Filter; label: string }[] = [
 
 export default function FilterTabs() {
     const [active, setActive] = useState<Filter>("today");
-  
+    useEffect(() => {
+      getDb().then((db) => {
+        console.log("DB initialized and smoke tested", db);
+      });
+    }, []);
+    
     return (
       <>
         <ul className="flex flex-row gap-4 text-sm">
