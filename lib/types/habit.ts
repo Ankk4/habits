@@ -1,13 +1,41 @@
-/**
- * Shared habit contracts for UI + server actions.
- * MikroORM entities live in lib/db/entities — do not mirror them here.
- */
+/** Shared habit contracts for UI and the browser SQLite client. */
 
 export enum HabitType {
   POSITIVE = "positive",
   NEGATIVE = "negative",
   NEUTRAL = "neutral",
 }
+
+export enum HabitCadence {
+  DAILY = "daily",
+  WEEKLY = "weekly",
+  MONTHLY = "monthly",
+  YEARLY = "yearly",
+}
+
+/** ISO weekday: 1 = Monday … 7 = Sunday. */
+export type IsoWeekday = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+/** How daily completions are tracked and displayed. */
+export enum HabitCompletionMode {
+  /** One check-in satisfies the day. */
+  ONCE = "once",
+  /** Count toward a daily target (+1); null target = unlimited logging. */
+  COUNTER = "counter",
+  /** Distinct check-ins per scheduled time each day. */
+  SCHEDULED = "scheduled",
+}
+
+export type HabitSchedule = {
+  cadence: HabitCadence;
+  /** Empty means every day (daily) or not applicable. */
+  daysOfWeek: IsoWeekday[];
+  completionMode: HabitCompletionMode;
+  /** Counter mode: daily goal. Null = unlimited (e.g. negative habit logging). */
+  dailyTarget?: number | null;
+  /** Sorted HH:MM times for daily check-ins (once, scheduled, or counter cues). */
+  scheduledTimes: string[];
+};
 
 export enum HabitCueKind {
   TEXT = "text",
@@ -22,6 +50,7 @@ export type CreateHabitInput = {
   name: string;
   description: string;
   type: HabitType;
+  schedule?: HabitSchedule;
   /** Optional text cues (TEXT kind). */
   cues?: string[];
 };
@@ -30,6 +59,8 @@ export type HabitCompletionDto = {
   id: number;
   habitId: number;
   completedAt: Date;
+  /** Scheduled mode: which HH:MM slot was checked off. */
+  slotTime?: string;
 };
 
 export type HabitCueDto = {
@@ -65,6 +96,7 @@ export type HabitDto = {
   type: HabitType;
   createdAt: Date;
   updatedAt: Date;
+  schedule: HabitSchedule;
   completions: HabitCompletionDto[];
   cues: HabitCueDto[];
   rewards: HabitRewardDto[];

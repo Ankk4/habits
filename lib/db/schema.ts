@@ -7,6 +7,11 @@ CREATE TABLE IF NOT EXISTS habit (
   name TEXT NOT NULL,
   description TEXT NOT NULL,
   type TEXT NOT NULL CHECK (type IN ('positive', 'negative', 'neutral')),
+  cadence TEXT NOT NULL DEFAULT 'daily' CHECK (cadence IN ('daily', 'weekly', 'monthly', 'yearly')),
+  days_of_week TEXT,
+  completion_mode TEXT NOT NULL DEFAULT 'once' CHECK (completion_mode IN ('once', 'counter', 'scheduled')),
+  daily_target INTEGER,
+  scheduled_times TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -14,7 +19,8 @@ CREATE TABLE IF NOT EXISTS habit (
 CREATE TABLE IF NOT EXISTS habit_completion (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   habit_id INTEGER NOT NULL REFERENCES habit(id) ON DELETE CASCADE,
-  completed_at TEXT NOT NULL
+  completed_at TEXT NOT NULL,
+  slot_time TEXT
 );
 
 CREATE TABLE IF NOT EXISTS habit_cue (

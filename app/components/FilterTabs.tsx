@@ -3,17 +3,14 @@
 import { useEffect, useState } from "react";
 import FilterButton from "./FilterButton";
 import HabitList from "./HabitList";
-import { HabitDto } from "@/lib/types/habit";
-import { habitDtosMockData } from "@/lib/habits/habitsMockData";
+import { listHabits } from "@/lib/habits/habitClient";
+import {
+  filterHabits,
+  type HabitFilter,
+} from "@/lib/habits/habitFilters";
+import type { HabitDto } from "@/lib/types/habit";
 
-type Filter = "all" | "today" | "daily" | "weekly" | "monthly" | "yearly";
-// TODO; This should be fetched from the database
-const habitDtos: HabitDto[] = habitDtosMockData;
-
-// temp smoke test new db client
-import { getDb } from "@/lib/db/client";
-
-const FILTERS: { id: Filter; label: string }[] = [
+const FILTERS: { id: HabitFilter; label: string }[] = [
   { id: "all", label: "All" },
   { id: "today", label: "Today" },
   { id: "daily", label: "Daily" },
@@ -23,36 +20,44 @@ const FILTERS: { id: Filter; label: string }[] = [
 ];
 
 export default function FilterTabs() {
-    const [active, setActive] = useState<Filter>("today");
-    useEffect(() => {
-      getDb().then((db) => {
-        console.log("DB initialized and smoke tested", db);
-      });
-    }, []);
-    
-    return (
-      <>
-        <ul className="flex flex-row gap-4 text-sm">
-          {FILTERS.map(({ id, label }) => (
-            <li key={id}>
-              <FilterButton
-                active={active === id}
-                onClick={() => setActive(id)}
-              >
-                {label}
-              </FilterButton>
-            </li>
-          ))}
-        </ul>
-        <hr className="w-full border-zinc-200 my-4" />
-  
-        {/* Layout / content switches with the tab */}
-        {active === "all" && <HabitList habits={habitDtos} />}
-        {active === "today" && <HabitList habits={habitDtos} />}
-        {active === "daily" && <HabitList habits={habitDtos} />}
-        {active === "weekly" && <HabitList habits={habitDtos} />}
-        {active === "monthly" && <HabitList habits={habitDtos} />}
-        {active === "yearly" && <HabitList habits={habitDtos} />}
-      </>
+  const [active, setActive] = useState<HabitFilter>("today");
+  const [habits, setHabits] = useState<HabitDto[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listHabits().then((loaded) => {
+      if (!cancelled) setHabits(loaded);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visible = filterHabits(habits, active);
+
+  const handleHabitUpdated = (updated: HabitDto) => {
+    setHabits((prev) =>
+      prev.map((habit) => (habit.id === updated.id ? updated : habit)),
     );
-  }
+  };
+
+  return (
+    <>
+      <ul className="flex flex-row gap-4 text-sm">
+        {FILTERS.map(({ id, label }) => (
+          <li key={id}>
+            <FilterButton
+              active={active === id}
+              onClick={() => setActive(id)}
+            >
+              {label}
+            </FilterButton>
+          </li>
+        ))}
+      </ul>
+      <hr className="w-full border-zinc-200 my-4" />
+
+      <HabitList habits={visible} onHabitUpdated={handleHabitUpdated} />
+    </>
+  );
+}

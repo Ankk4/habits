@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { listHabits } from "@/lib/habits/habitClient";
 import { CreateHabitInput, HabitDto, HabitType } from "@/lib/types/habit";
-import { habitDtosMockData } from "@/lib/habits/habitsMockData";
 
 const fieldClass =
   "block w-full rounded-md border border-gray-300 bg-white p-3 text-base dark:border-gray-700 dark:bg-gray-900 dark:text-white";
@@ -20,14 +20,23 @@ export default function HabitCreateForm({
   const [cueText, setCueText] = useState("");
   const [stack, setStack] = useState<"before" | "after" | undefined>(undefined);
   const [showStackEditor, setShowStackEditor] = useState(false);
+  const [habits, setHabits] = useState<HabitDto[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listHabits().then((loaded) => {
+      if (!cancelled) setHabits(loaded);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const cues = cueText.trim() ? [cueText.trim()] : undefined;
     onSubmit({ name, description, type, cues });
   };
-
-  const habits = habitDtosMockData; // TODO: populate with existing habits, for now with mockdata
 
   return (
     <div className="w-full">
