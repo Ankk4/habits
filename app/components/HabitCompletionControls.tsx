@@ -11,6 +11,20 @@ type HabitCompletionControlsProps = {
   onIncrement: (slotTime?: string) => void;
 };
 
+const actionButtonClassName =
+  "inline-flex h-8 items-center gap-1 rounded-md border border-zinc-300 bg-white px-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60";
+
+function CompletedMark({ label }: { label: string }) {
+  return (
+    <span
+      className="inline-flex h-8 w-8 items-center justify-center text-emerald-600"
+      aria-label={label}
+    >
+      <CheckIcon className="h-4 w-4" aria-hidden />
+    </span>
+  );
+}
+
 function CounterControls({
   progress,
   isSaving,
@@ -18,45 +32,25 @@ function CounterControls({
 }: HabitCompletionControlsProps) {
   const { todayCount, todayTarget } = progress;
   const hasTarget = todayTarget != null && todayTarget > 0;
-  const ratio = hasTarget ? Math.min(todayCount / todayTarget, 1) : 0;
+
+  if (hasTarget && !progress.canIncrement) {
+    return <CompletedMark label="Done for today" />;
+  }
 
   return (
-    <div className="flex min-w-0 flex-col items-end gap-1.5">
-      {hasTarget ? (
-        <>
-          <div className="flex items-center gap-2 text-xs font-medium tabular-nums text-zinc-600">
-            <span>
-              {todayCount}/{todayTarget}
-            </span>
-            <div className="h-1.5 w-20 overflow-hidden rounded-full bg-white/80 ring-1 ring-zinc-200">
-              <div
-                className="h-full rounded-full bg-zinc-700 transition-all duration-300"
-                style={{ width: `${ratio * 100}%` }}
-              />
-            </div>
-i          </div>
-          <button
-            type="button"
-            onClick={() => onIncrement()}
-            disabled={!progress.canIncrement || isSaving}
-            className="inline-flex items-center gap-1 rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <PlusIcon className="h-4 w-4" aria-hidden />
-            {isSaving ? "Saving…" : progress.canIncrement ? "+1" : "Done"}
-          </button>
-        </>
-      ) : (
-        <button
-          type="button"
-          onClick={() => onIncrement()}
-          disabled={isSaving}
-          className="inline-flex items-center gap-1 rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
-        >
-          <PlusIcon className="h-4 w-4" aria-hidden />
-          {isSaving ? "Saving…" : `Log (${todayCount})`}
-        </button>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={() => onIncrement()}
+      disabled={!progress.canIncrement || isSaving}
+      className={actionButtonClassName}
+    >
+      <PlusIcon className="h-4 w-4" aria-hidden />
+      {isSaving
+        ? "Saving…"
+        : hasTarget
+          ? "+1"
+          : `Log (${todayCount})`}
+    </button>
   );
 }
 
@@ -96,19 +90,18 @@ function OnceControls({
   isSaving,
   onIncrement,
 }: HabitCompletionControlsProps) {
-  const completed = !progress.canIncrement;
+  if (!progress.canIncrement) {
+    return <CompletedMark label="Completed today" />;
+  }
+
   return (
     <button
       type="button"
       onClick={() => onIncrement()}
-      disabled={completed || isSaving}
-      className={`text-sm font-medium px-2 py-1 rounded-md border w-24 h-8 ${
-        completed
-          ? "border-zinc-200 bg-zinc-100 text-zinc-500 cursor-not-allowed opacity-70"
-          : "border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-white"
-      }`}
+      disabled={isSaving}
+      className={actionButtonClassName}
     >
-      {isSaving ? "Saving…" : completed ? "Completed" : "Complete"}
+      {isSaving ? "Saving…" : "Complete"}
     </button>
   );
 }

@@ -148,8 +148,12 @@ export function formatScheduleLabel(schedule: HabitSchedule): string {
       return `${cadence} · ${schedule.dailyTarget}× / day`;
     }
     case HabitCompletionMode.SCHEDULED: {
-      const times = schedule.scheduledTimes.map(formatTimeOfDay).join(", ");
-      return `${cadence} · ${times}`;
+      const times = schedule.scheduledTimes;
+      if (times.length === 0) return `${cadence} · Scheduled`;
+      if (times.length === 1) {
+        return `${cadence} · ${formatTimeOfDay(times[0])}`;
+      }
+      return `${cadence} · ${times.length}× / day`;
     }
     default: {
       const time = schedule.scheduledTimes[0];

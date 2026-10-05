@@ -11,7 +11,7 @@ export default function HabitList({
   onHabitUpdated?: (habit: HabitDto) => void;
 }) {
   return (
-    <ul className="flex flex-col gap-2 w-full">
+    <ul className="flex flex-col gap-2 w-full overflow-y-auto max-h-[calc(100vh-10rem)]">
       {habits.map((h) => (
         <li key={h.id}>
           <HabitCard habit={h} onHabitUpdated={onHabitUpdated} />

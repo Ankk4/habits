@@ -13,6 +13,7 @@ import {
 import { habitProgress } from "@/lib/habits/progress";
 import {
   formatScheduleLabel,
+  formatTimeOfDay,
   weekdayStrip,
 } from "@/lib/habits/schedule";
 import {
@@ -191,10 +192,18 @@ export default function HabitCard({
                 <ClockIcon className="h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                 <span>{scheduleLabel}</span>
               </span>
+              {progress.todayTarget != null &&
+                (isScheduledMode ||
+                  habitDataState.schedule.completionMode ===
+                    HabitCompletionMode.COUNTER) && (
+                  <span className="text-xs font-medium tabular-nums text-zinc-600">
+                    {progress.todayCount}/{progress.todayTarget}
+                  </span>
+                )}
             </div>
           </div>
 
-          <div className="flex shrink-0 flex-row items-start gap-2">
+          <div className="flex shrink-0 flex-row items-center gap-1">
             {!isScheduledMode && (
               <HabitCompletionControls
                 progress={progress}
@@ -202,70 +211,46 @@ export default function HabitCard({
                 onIncrement={(slotTime) => void completeHabit(slotTime)}
               />
             )}
-            <button type="button" aria-label="Delete habit">
+            {isScheduledMode && progress.nextOpenSlot && (
+              <button
+                type="button"
+                onClick={() => void completeHabit(progress.nextOpenSlot)}
+                disabled={isSaving}
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-2.5 text-xs font-medium tabular-nums text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+                aria-label={`Check in ${formatTimeOfDay(progress.nextOpenSlot)}`}
+              >
+                <span>{formatTimeOfDay(progress.nextOpenSlot)}</span>
+                <CheckIcon className="h-3.5 w-3.5" aria-hidden />
+              </button>
+            )}
+            {isScheduledMode &&
+              !progress.nextOpenSlot &&
+              progress.completedToday && (
+                <span
+                  className="inline-flex h-8 w-8 items-center justify-center text-emerald-600"
+                  aria-label="Done for today"
+                >
+                  <CheckIcon className="h-4 w-4" aria-hidden />
+                </span>
+              )}
+            <button
+              type="button"
+              aria-label="Delete habit"
+              className="inline-flex h-8 w-8 items-center justify-center text-zinc-500 hover:text-zinc-800"
+            >
               <TrashIcon className="h-4 w-4" />
             </button>
-            <button type="button" aria-label="Edit habit">
+            <button
+              type="button"
+              aria-label="Edit habit"
+              className="inline-flex h-8 w-8 items-center justify-center text-zinc-500 hover:text-zinc-800"
+            >
               <PencilIcon className="h-4 w-4" />
             </button>
           </div>
         </div>
 
         <div className="flex flex-col gap-2 pl-2 text-left text-sm text-gray-500">
-          {isScheduledMode && (
-            <HabitCompletionControls
-              progress={progress}
-              isSaving={isSaving}
-              onIncrement={(slotTime) => void completeHabit(slotTime)}
-            />
-          )}
-
-          <div className="flex items-center gap-1" aria-label="Scheduled days">
-            {weekStrip.map(({ label, iso, active }) => (
-              <span
-                key={iso}
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold ${
-                  active
-                    ? "bg-zinc-800 text-white"
-                    : "bg-white/60 text-zinc-400 ring-1 ring-zinc-200"
-                }`}
-              >
-                {label.charAt(0)}
-              </span>
-            ))}
-          </div>
-
-          <p>{habitDataState.description}</p>
-
-          {(habitDataState.stackedAfter ||
-            habitDataState.stackedInto.length > 0) && (
-            <p
-              className="text-xs font-medium text-zinc-600"
-              aria-label="Habit stack"
-            >
-              {habitDataState.stackedAfter && (
-                <span>
-                  After{" "}
-                  <span className="font-semibold text-zinc-800">
-                    {habitDataState.stackedAfter.name}
-                  </span>
-                </span>
-              )}
-              {habitDataState.stackedAfter &&
-                habitDataState.stackedInto.length > 0 && (
-                  <span className="text-zinc-400"> · </span>
-                )}
-              {habitDataState.stackedInto.length > 0 && (
-                <span>
-                  Then{" "}
-                  <span className="font-semibold text-zinc-800">
-                    {habitDataState.stackedInto.map((s) => s.name).join(", ")}
-                  </span>
-                </span>
-              )}
-            </p>
-          )}
-
           <div
             className="flex items-center gap-3"
             aria-label={`Current streak: ${streak} days`}
@@ -294,15 +279,6 @@ export default function HabitCard({
                 />
               ))}
             </div>
-            <div className="flex items-center gap-1 ml-auto" aria-hidden>
-              <GiftIcon className="h-4 w-4 text-zinc-400" />
-              <p>
-                {habitDataState.rewards
-                  .map(formatReward)
-                  .filter(Boolean)
-                  .join(", ")}
-              </p>
-            </div>
           </div>
 
           <button
@@ -319,41 +295,120 @@ export default function HabitCard({
               }`}
             />
           </button>
+
           {detailsOpen && (
-            <div className="grid grid-cols-3 gap-x-4 gap-y-0.5 text-xs text-zinc-500">
-              
-              <div className="flex flex-col gap-0.5 text-xs text-zinc-600">
-                {habitDataState.cues.map((cue) => (
-                  <HabitCueField key={cue.id} label={cue.kind} cue={cue} />
+            <div className="flex flex-col gap-2">
+              {isScheduledMode && (
+                <HabitCompletionControls
+                  progress={progress}
+                  isSaving={isSaving}
+                  onIncrement={(slotTime) => void completeHabit(slotTime)}
+                />
+              )}
+
+              {isScheduledMode &&
+                habitDataState.schedule.scheduledTimes.length > 1 && (
+                  <p className="text-xs text-zinc-500">
+                    {habitDataState.schedule.scheduledTimes
+                      .map(formatTimeOfDay)
+                      .join(" · ")}
+                  </p>
+                )}
+
+              <div className="flex items-center gap-1" aria-label="Scheduled days">
+                {weekStrip.map(({ label, iso, active }) => (
+                  <span
+                    key={iso}
+                    className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold ${
+                      active
+                        ? "bg-zinc-800 text-white"
+                        : "bg-white/60 text-zinc-400 ring-1 ring-zinc-200"
+                    }`}
+                  >
+                    {label.charAt(0)}
+                  </span>
                 ))}
               </div>
 
-              <div className="flex flex-col gap-0.5">
-                <p>
-                  Created: {habitDataState.createdAt.toLocaleDateString()}
-                </p>
-                <p>
-                  Last completed:{" "}
-                  {habitDataState.completions.length > 0
-                    ? habitDataState.completions[
-                        habitDataState.completions.length - 1
-                      ]?.completedAt.toLocaleDateString()
-                    : "Never"}
-                </p>
-              </div>
+              {habitDataState.description && <p>{habitDataState.description}</p>}
 
-              <div className="flex flex-col gap-0.5">
-                <p>Streak: {metaTracking.streak}</p>
-                <p>
-                  Longest streak: {metaTracking.longestStreak} /{" "}
-                  {metaTracking.longestCompletionStreak}
+              {(habitDataState.stackedAfter ||
+                habitDataState.stackedInto.length > 0) && (
+                <p
+                  className="text-xs font-medium text-zinc-600"
+                  aria-label="Habit stack"
+                >
+                  {habitDataState.stackedAfter && (
+                    <span>
+                      After{" "}
+                      <span className="font-semibold text-zinc-800">
+                        {habitDataState.stackedAfter.name}
+                      </span>
+                    </span>
+                  )}
+                  {habitDataState.stackedAfter &&
+                    habitDataState.stackedInto.length > 0 && (
+                      <span className="text-zinc-400"> · </span>
+                    )}
+                  {habitDataState.stackedInto.length > 0 && (
+                    <span>
+                      Then{" "}
+                      <span className="font-semibold text-zinc-800">
+                        {habitDataState.stackedInto
+                          .map((s) => s.name)
+                          .join(", ")}
+                      </span>
+                    </span>
+                  )}
                 </p>
-                <p>Average streak: {metaTracking.averageStreak}</p>
-                <p>
-                  Average completion rate: {metaTracking.averageCompletionRate}
-                </p>
-              </div>
+              )}
 
+              {habitDataState.rewards.some((r) => r.points > 0) && (
+                <div className="flex items-center gap-1 text-xs text-zinc-500">
+                  <GiftIcon className="h-4 w-4 text-zinc-400" aria-hidden />
+                  <p>
+                    {habitDataState.rewards
+                      .map(formatReward)
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-3 gap-x-4 gap-y-0.5 text-xs text-zinc-500">
+                <div className="flex flex-col gap-0.5 text-xs text-zinc-600">
+                  {habitDataState.cues.map((cue) => (
+                    <HabitCueField key={cue.id} label={cue.kind} cue={cue} />
+                  ))}
+                </div>
+
+                <div className="flex flex-col gap-0.5">
+                  <p>
+                    Created: {habitDataState.createdAt.toLocaleDateString()}
+                  </p>
+                  <p>
+                    Last completed:{" "}
+                    {habitDataState.completions.length > 0
+                      ? habitDataState.completions[
+                          habitDataState.completions.length - 1
+                        ]?.completedAt.toLocaleDateString()
+                      : "Never"}
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-0.5">
+                  <p>Streak: {metaTracking.streak}</p>
+                  <p>
+                    Longest streak: {metaTracking.longestStreak} /{" "}
+                    {metaTracking.longestCompletionStreak}
+                  </p>
+                  <p>Average streak: {metaTracking.averageStreak}</p>
+                  <p>
+                    Average completion rate:{" "}
+                    {metaTracking.averageCompletionRate}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>
